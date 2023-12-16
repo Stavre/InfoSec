@@ -405,7 +405,6 @@ Under Linux, permissions are assigned to users and groups. Each user can be a me
 
 When a user wants to access the contents of a Linux directory, they must first traverse the directory, which means navigating to that directory, requiring the user to have `execute` permissions on the directory. Without this permission, the user cannot access the directory's contents and will instead be presented with a “`Permission Denied`" error message.
 
-
 It is important to note that `execute` permissions are necessary to traverse a directory, no matter the user's level of access. Also, `execute` permissions on a directory do not allow a user to execute or modify any files or contents within the directory, only to traverse and access the content of the directory.
 
 To execute files within the directory, a user needs `execute` permissions on the corresponding file. To modify the contents of a directory (create, delete, or rename files and subdirectories), the user needs `write` permissions on the directory.
@@ -454,7 +453,6 @@ cry0l1t3@htb[/htb]$ chmod a+r shell && ls -l shell
 -rwxr-xr-x   1 cry0l1t3 htbteam 0 May  4 22:12 shell
 ```
 
-
 ##### Change Owner
 
 chown `<user>:<group> <file/directory>`
@@ -476,3 +474,284 @@ For example, in a shared home directory, where multiple users have access to the
 When a sticky bit is set on a directory, it is represented by the letter “`t`" in the execute permission of the directory's permissions. For example, if a directory has permissions “`rwxrwxrwt`", it means that the sticky bit is set, giving the extra level of security so that no one other than the owner or root user can delete or rename the files or folders in the directory.
 
 If the sticky bit is capitalized (`T`), then this means that all other users do not have `execute` (`x`) permissions and, therefore, cannot see the contents of the folder nor run any programs from it. The lowercase sticky bit (`t`) is the sticky bit where the `execute` (`x`) permissions have been set.
+
+#### User management
+
+##### Sudo
+
+Execute command as a different user
+
+##### Su
+
+The `su` utility requests appropriate user credentials via PAM and switches to that user ID (the default user is the superuser). A shell is then executed.
+
+##### Useradd
+
+Creates a new user or update default new user information.
+
+##### Userdel
+
+Deletes a user account and related files
+
+##### Usermod
+
+Modifies a user account.
+
+##### Addgroup
+
+Adds a group to the system
+
+##### Delgroup
+
+Removes a group from the system
+
+##### Passwd
+
+Changes user password
+
+#### Package management
+
+The features that most package management systems provide are:
+
+* Package downloading
+* Dependency resolution
+* A standard binary package format
+* Common installation and configuration locations
+* Additional system-related configuration and functionality
+* Quality control
+
+We can use many different package management systems that cover different types of files like ".deb", ".rpm", and others. The package management requirement is that the software to be installed is available as a corresponding package. Typically this is created, offered, and maintained centrally under Linux distributions. In this way, the software is integrated directly into the system, and its various directories are distributed throughout the system. The package management software retrieves the necessary changes for system installation from the package itself and then implements these changes to install the package successfully. If the package management software recognizes that additional packages are required for the proper functioning of the package that has not yet been installed, a dependency is included and either warns the administrator or tries to reload the missing software from a repository, for example, and install it in advance.
+
+If an installed software has been deleted, the package management system then retakes the package's information, modifies it based on its configuration, and deletes files. There are different package management programs that we can use for this. Here is a list of examples of such programs:
+
+| **Command** | **Description**                                                                                                                                                                                                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dpkg`          | The `dpkg` is a tool to install, build, remove, and manage Debian packages. The primary and more user-friendly front-end for `dpkg` is aptitude.                                                                                                                                                                                                    |
+| `apt`           | Apt provides a high-level command-line interface for the package management system.                                                                                                                                                                                                                                                                     |
+| `aptitude`      | Aptitude is an alternative to apt and is a high-level interface to the package manager.                                                                                                                                                                                                                                                                 |
+| `snap`          | Install, configure, refresh, and remove snap packages. Snaps enable the secure distribution of the latest apps and utilities for the cloud, servers, desktops, and the internet of things.                                                                                                                                                              |
+| `gem`           | Gem is the front-end to RubyGems, the standard package manager for Ruby.                                                                                                                                                                                                                                                                                |
+| `pip`           | Pip is a Python package installer recommended for installing Python packages that are not available in the Debian archive. It can work with version control repositories (currently only Git, Mercurial, and Bazaar repositories), logs output extensively, and prevents partial installs by downloading all requirements before starting installation. |
+| `git`           | Git is a fast, scalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.                                                                                                                                                                                  |
+
+#### Service and Process Management
+
+In general, there are two types of services: internal, the relevant services that are required at system startup, which for example, perform hardware-related tasks, and services that are installed by the user, which usually include all server services. Such services run in the background without any user interaction. These are also called `daemons` and are identified by the letter '`d`' at the end of the program name, for example, `sshd` or `systemd`.
+
+Most Linux distributions have now switched to `systemd`. This daemon is an `Init process` started first and thus has the process ID (PID) 1. This daemon monitors and takes care of the orderly starting and stopping of other services. All processes have an assigned PID that can be viewed under `/proc/` with the corresponding number. Such a process can have a parent process ID (PPID), and if so, it is known as the child process.
+
+Besides `systemctl` we can also use `update-rc.d` to manage SysV init script links. Let us have a look at some examples. We will use the `OpenSSH` server in these examples. If we do not have this installed, please install it before proceeding to this section.
+
+##### Systemctl
+
+###### Start service
+
+systemctl start `<service_name>`
+
+###### Check status
+
+systemctl status `<service_name>`
+
+###### Add service to SysV init script for execution after startup
+
+systemctl enable `<service_name>`
+
+###### List all services
+
+systemctl list-units --type=service
+
+###### See service journal
+
+journalctl -u `<service> --no-pager`
+
+##### Process state
+
+A process can be in the following states:
+
+* Running
+* Waiting (waiting for an event or system resource)
+* Stopped
+* Zombie (stopped but still has an entry in the process table).
+
+Processes can be controlled using `kill`, `pkill`, `pgrep`, and `killall`. To interact with a process, we must send a signal to it. We can view all signals with the following command:
+
+```shell-session
+StavreAcad@htb[/htb]$ kill -l
+
+ 1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL       5) SIGTRAP
+ 6) SIGABRT      7) SIGBUS       8) SIGFPE       9) SIGKILL     10) SIGUSR1
+11) SIGSEGV     12) SIGUSR2     13) SIGPIPE     14) SIGALRM     15) SIGTERM
+16) SIGSTKFLT   17) SIGCHLD     18) SIGCONT     19) SIGSTOP     20) SIGTSTP
+21) SIGTTIN     22) SIGTTOU     23) SIGURG      24) SIGXCPU     25) SIGXFSZ
+26) SIGVTALRM   27) SIGPROF     28) SIGWINCH    29) SIGIO       30) SIGPWR
+31) SIGSYS      34) SIGRTMIN    35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3
+38) SIGRTMIN+4  39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8
+43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13
+48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13 52) SIGRTMAX-12
+53) SIGRTMAX-11 54) SIGRTMAX-10 55) SIGRTMAX-9  56) SIGRTMAX-8  57) SIGRTMAX-7
+58) SIGRTMAX-6  59) SIGRTMAX-5  60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2
+63) SIGRTMAX-1  64) SIGRTMAX
+```
+
+The most commonly used are:
+
+| **Signal** | **Description**                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `1`            | `SIGHUP` - This is sent to a process when the terminal that controls it is closed.                                         |
+| `2`            | `SIGINT` - Sent when a user presses `[Ctrl] + C` in the controlling terminal to interrupt a process.                     |
+| `3`            | `SIGQUIT` - Sent when a user presses `[Ctrl] + D` to quit.                                                               |
+| `9`            | `SIGKILL` - Immediately kill a process with no clean-up operations.                                                        |
+| `15`           | `SIGTERM` - Program termination.                                                                                           |
+| `19`           | `SIGSTOP` - Stop the program. It cannot be handled anymore.                                                                |
+| `20`           | `SIGTSTP` - Sent when a user presses `[Ctrl] + Z` to request for a service to suspend. The user can handle it afterward. |
+
+##### Kill a process
+
+kill 9 `<PID>`
+
+PID = process id
+
+##### Background a process
+
+CTRL + Z -> stops the process and puts it in background
+
+jobs - displays all background processes
+
+###### Keep process running in background
+
+Use bg.
+
+Another option is to automatically set the process with an AND sign (`&`) at the end of the command.
+
+```shell-session
+ping -c 10 www.hackthebox.eu &
+```
+
+##### Get background process into foreground
+
+fg `<id>`
+
+id = process id from jobs
+
+##### Execute multiple commands
+
+; -> doesn't care about previous command's result
+
+&& -> cares only that the previous command succeded
+
+| -> cares that the previous command succeded and about its output
+
+#### Task Scheduling
+
+##### Systemd
+
+Systemd is a service used in Linux systems such as Ubuntu, Redhat Linux, and Solaris to start processes and scripts at a specific time. With it, we can set up processes and scripts to run at a specific time or time interval and can also specify specific events and triggers that will trigger a specific task. To do this, we need to take some steps and precautions before our scripts or processes are automatically executed by the system.
+
+1. Create a timer
+2. Create a service
+3. Activate the timer
+
+###### Create a Timer
+
+To create a timer for systemd, we need to create a directory where the timer script will be stored.
+
+```shell-session
+StavreAcad@htb[/htb]$ sudo mkdir /etc/systemd/system/mytimer.timer.d
+StavreAcad@htb[/htb]$ sudo vim /etc/systemd/system/mytimer.timer
+```
+
+Next, we need to create a script that configures the timer. The script must contain the following options: "Unit", "Timer" and "Install". The "Unit" option specifies a description for the timer. The "Timer" option specifies when to start the timer and when to activate it. Finally, the "Install" option specifies where to install the timer.
+
+###### Mytimer.timer
+
+```txt
+[Unit]
+Description=My Timer
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=1hour
+
+[Install]
+WantedBy=timers.target
+```
+
+Here it depends on how we want to use our script. For example, if we want to run our script only once after the system boot, we should use `OnBootSec` setting in `Timer`. However, if we want our script to run regularly, then we should use the `OnUnitActiveSec` to have the system run the script at regular intervals. Next, we need to create our `service`.
+
+###### **Create a Service**
+
+```shell-session
+StavreAcad@htb[/htb]$ sudo vim /etc/systemd/system/mytimer.service
+```
+
+Here we set a description and specify the full path to the script we want to run. The "multi-user.target" is the unit system that is activated when starting a normal multi-user mode. It defines the services that should be started on a normal system startup.
+
+```txt
+[Unit]
+Description=My Service
+
+[Service]
+ExecStart=/full/path/to/my/script.sh
+
+[Install]
+WantedBy=multi-user.target
+```
+
+After that, we have to let `systemd` read the folders again to include the changes.
+
+###### **Reload Systemd**
+
+```shell-session
+StavreAcad@htb[/htb]$ sudo systemctl daemon-reload
+```
+
+After that, we can use `systemctl` to `start` the service manually and `enable` the autostart.
+
+###### **Start the Timer & Service**
+
+```shell-session
+StavreAcad@htb[/htb]$ sudo systemctl start mytimer.service
+StavreAcad@htb[/htb]$ sudo systemctl enable mytimer.service
+```
+
+##### Cron
+
+Cron is another tool that can be used in Linux systems to schedule and automate processes. It allows users and administrators to execute tasks at a specific time or within specific intervals. For the above examples, we can also use Cron to automate the same tasks. We just need to create a script and then tell the cron daemon to call it at a specific time.
+
+With Cron, we can automate the same tasks, but the process for setting up the Cron daemon is a little different than Systemd. To set up the cron daemon, we need to store the tasks in a file called `crontab` and then tell the daemon when to run the tasks. Then we can schedule and automate the tasks by configuring the cron daemon accordingly. The structure of Cron consists of the following components:
+
+| **Time Frame**   | **Description**                                                 |
+| ---------------------- | --------------------------------------------------------------------- |
+| Minutes (0-59)         | This specifies in which minute the task should be executed.           |
+| Hours (0-23)           | This specifies in which hour the task should be executed.             |
+| Days of month (1-31)   | This specifies on which day of the month the task should be executed. |
+| Months (1-12)          | This specifies in which month the task should be executed.            |
+| Days of the week (0-7) | This specifies on which day of the week the task should be executed.  |
+
+For example, such a crontab could look like this:
+
+Code: **txt**
+
+```txt
+# System Update
+* */6 * * /path/to/update_software.sh
+
+# Execute scripts
+0 0 1 * * /path/to/scripts/run_scripts.sh
+
+# Cleanup DB
+0 0 * * 0 /path/to/scripts/clean_database.sh
+
+# Backups
+0 0 * * 7 /path/to/scripts/backup.sh
+```
+
+The "System Update" should be executed every sixth hour. This is indicated by the entry `*/6` in the hour column. The task is executed by the script `update_software.sh`, whose path is given in the last column.
+
+The task `execute scripts` is to be executed every first day of the month at midnight. This is indicated by the entries `0` and `0` in the minute and hour columns and `1` in the days-of-the-month column. The task is executed by the `run_scripts.sh` script, whose path is given in the last column.
+
+The third task, `Cleanup DB`, is to be executed every Sunday at midnight. This is specified by the entries `0` and `0` in the minute and hour columns and `0` in the days-of-the-week column. The task is executed by the `clean_database.sh` script, whose path is given in the last column.
+
+The fourth task, `backups`, is to be executed every Sunday at midnight. This is indicated by the entries `0` and `0` in the minute and hour columns and `7` in the days-of-the-week column. The task is executed by the `backup.sh` script, whose path is given in the last column.
+
+It is also possible to receive notifications when a task is executed successfully or unsuccessfully. In addition, we can create logs to monitor the execution of the tasks.
